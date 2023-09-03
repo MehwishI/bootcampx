@@ -8,9 +8,7 @@ const pool = new Pool({
 
 
 
-
-
-pool.query(`SELECT t.name as teacher_name, c.name as cohort 
+const queryString=`SELECT t.name as teacher_name, c.name as cohort 
 FROM assistance_requests a 
 JOIN teachers t 
 ON a.teacher_id= t.id 
@@ -18,9 +16,13 @@ JOIN students s
 ON a.student_id = s.id 
 JOIN cohorts c 
 ON s.cohort_id= c.id
-WHERE c.name= '${process.argv[2] || 'JUL02'}'
+WHERE c.name LIKE $1
 GROUP BY t.name, c.name
-ORDER BY t.name;`)
+ORDER BY t.name`;
+const cohortname= process.argv[2];
+const values= [`%${cohortname}%`]
+
+pool.query(queryString,values)
   .then(res => {
     res.rows.forEach(teacher => {
       console.log(`${teacher.cohort}: ${teacher.teacher_name}`);
